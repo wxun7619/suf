@@ -1,0 +1,10 @@
+rootProject.name = 'microserviceframework'
+include 'framework'
+include 'demo.bill'
+include 'demo.stock'
+include 'demo.pay'
+include 'usersystem'
+include 'domainservice'
+include 'sufservice'
+include 'domainservice.adminportal'
+
