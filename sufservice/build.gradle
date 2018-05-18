@@ -17,4 +17,6 @@ dependencies {
     testCompile("junit:junit:$junitVersion")
     testCompile("org.springframework.boot:spring-boot-starter-test:$springBootVersion")
     testCompile("com.h2database:h2:$h2Version")
+    testCompile project(":framework.test")
 }
+

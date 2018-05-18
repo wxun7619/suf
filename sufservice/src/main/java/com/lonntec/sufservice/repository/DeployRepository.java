@@ -27,12 +27,11 @@ public interface DeployRepository extends PagingAndSortingRepository<ApplyForm,S
 
     @Query("select count(f) from ApplyForm f where " +
             "(f.domain.domainNumber like :keyword or f.domain.domainName like :keyword or f.domain.domainShortName like :keyword) " +
-            "and f.domain.user.rowId = :userId" +
-            " order by f.createTime desc")
+            "and f.domain.user.rowId = :userId")
     Integer countByMyQuery(
             @Param("keyword") String keyword,
             @Param("userId") String ownerId);
 
-    @Query("select count(f) from ApplyForm f where f.domain.domainNumber like :keyword or f.domain.domainName like :keyword or f.domain.domainShortName like :keyword order by f.createTime desc")
+    @Query("select count(f) from ApplyForm f where f.domain.domainNumber like :keyword or f.domain.domainName like :keyword or f.domain.domainShortName like :keyword")
     Integer countByMyQueryIsAdmin( @Param("keyword") String keyword);
 }

@@ -26,7 +26,9 @@ public enum UserSystemStateCode implements StateCode {
     NickName_IsEmpty(200070,"昵称不能为空"),
     User_IsAdminNotDelete(200071,"用户为管理员,不允许删除"),
     User_IsAvail(200072,"删除用户前必须先禁用用户"),
-    User_IsAdminNotDisabled(200073,"用户为管理员,不允许禁用")
+    User_IsAdminNotDisabled(200073,"用户为管理员,不允许禁用"),
+    No_Permission(200074,"没有权限"),
+    Admin_CanNotDisableAdmin(200075,"admin账号不允许撤销管理员权限"),
     ;
 
     private Integer code;

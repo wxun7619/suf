@@ -1,9 +1,8 @@
 package team.benchem.usersystem.entity;
 
-import sun.misc.BASE64Encoder;
-
 import javax.persistence.*;
 import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
@@ -73,8 +72,8 @@ public class User {
         this.password = password;
         try{
             MessageDigest digest = MessageDigest.getInstance("MD5");
-            BASE64Encoder encoder = new BASE64Encoder();
-            this.passwordHash = encoder.encode(digest.digest(this.password.getBytes("utf-8")));
+            byte[] md5Data = digest.digest(this.password.getBytes("utf-8"));
+            this.passwordHash =  Base64.getEncoder().encodeToString(md5Data);
         }catch (Exception ex){
             ex.printStackTrace();
             this.passwordHash = this.password;

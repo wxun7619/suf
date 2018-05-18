@@ -1,6 +1,7 @@
 package com.lonntec.sufservice.entity;
 
 import javax.persistence.*;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
@@ -48,6 +49,8 @@ public class ApplyForm {
 
     public ApplyForm() {
         rowId = UUID.randomUUID().toString();
+        Calendar calendar = Calendar.getInstance();
+        createTime = calendar.getTime();
     }
 
     public String getRowId() {

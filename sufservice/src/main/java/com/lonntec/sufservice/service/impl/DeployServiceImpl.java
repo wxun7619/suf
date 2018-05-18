@@ -1,11 +1,9 @@
 package com.lonntec.sufservice.service.impl;
 
-import com.lonntec.sufservice.entity.ApplyForm;
-import com.lonntec.sufservice.entity.Domain;
-import com.lonntec.sufservice.entity.DomainUser;
-import com.lonntec.sufservice.entity.User;
+import com.lonntec.sufservice.entity.*;
 import com.lonntec.sufservice.lang.DeploySystemException;
 import com.lonntec.sufservice.lang.DeploySystemStateCode;
+import com.lonntec.sufservice.proxy.CodeRuleService;
 import com.lonntec.sufservice.repository.DeployRepository;
 import com.lonntec.sufservice.repository.DomainRepository;
 import com.lonntec.sufservice.repository.DomainUserRepository;
@@ -20,24 +18,19 @@ import team.benchem.framework.service.TokenService;
 
 import javax.transaction.Transactional;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Transactional(rollbackOn = {MicroServiceException.class, RuntimeException.class})
 @Service
 public class DeployServiceImpl implements DeployService{
-
     @Autowired
     DeployRepository deployRepository;
-
+    @Autowired
+    CodeRuleService codeRuleService;
     @Autowired
     DomainRepository domainRepository;
-
     @Autowired
     UserRepository userRepository;
-
     @Autowired
     DomainUserRepository domainUserRepository;
     @Autowired
@@ -63,16 +56,12 @@ public class DeployServiceImpl implements DeployService{
             queryKeywork = "%" + queryKeywork + "%";
         }
         //若果是admin可以查所有，如果是实施人员只能查自己创建的
-        if(user.isPresent()){
             if(user.get().getAdmin()==true){
                 return  deployRepository.findAllByMyQueryIsAdmin(queryKeywork,pageable);
-            }else if(user.get().getAdmin()==false){
+            }else{
                 return deployRepository.findAllByMyQuery(queryKeywork,tokenuserId,pageable);
             }
-        }
-        return null;
     }
-
     /**
      *
      *获取开通申请数量
@@ -85,7 +74,7 @@ public class DeployServiceImpl implements DeployService{
         //判断用户是否存在
         if(!user.isPresent()){
             throw new DeploySystemException(DeploySystemStateCode.Login_IsNot);
-        }else if(user.isPresent()){
+        }
             String queryKeywork = keyword== null || keyword.replaceAll("\\s*","").equals("") ? "%" : keyword;
             if(!queryKeywork.contains("%")){
                 queryKeywork = "%" + queryKeywork + "%";
@@ -93,13 +82,10 @@ public class DeployServiceImpl implements DeployService{
             //若果是admin可以查所有，如果是实施人员只能查自己创建的
             if(user.get().getAdmin()==true){
                 return  deployRepository.countByMyQueryIsAdmin(queryKeywork);
-            }else if(user.get().getAdmin()==false){
+            }else{
                 return deployRepository.countByMyQuery(queryKeywork,tokenuserId);
             }
-        }
-        return 0;
     }
-
     /**
      *
      *递交开通申请
@@ -118,7 +104,7 @@ public class DeployServiceImpl implements DeployService{
         }
         //获取企业域信息
         Optional<Domain> domain= domainRepository.findById(domainId);
-        //判断企业域是否存在
+        //判断企业域是否存在 是否已开通suf 是否禁用
         if(!domain.isPresent()){
             throw new DeploySystemException(DeploySystemStateCode.Domain_IsNotExist);
         }else if(domain.get().getIsActiveSuf()==true){
@@ -126,35 +112,32 @@ public class DeployServiceImpl implements DeployService{
         }else if (domain.get().getIsEnable()==false){
             throw new DeploySystemException(DeploySystemStateCode.Domain_IsNotEnable);
         }
-        //获取owneruser
-        Optional<User> userOptional=userRepository.findById(domain.get().getUser().getRowId());
-        //获取domainUser
-        DomainUser domainUser=domainUserRepository.findByUserName(domainUserName);
-
         ApplyForm applyForm=new ApplyForm();
-        //申请单单号
-        SimpleDateFormat sdf=new SimpleDateFormat("yyMMddHHmmssSSS");
-        Calendar calendar=Calendar.getInstance();
-        //申请单号 Todo（完善）
-        applyForm.setBillNumber("SQ"+sdf.format(new Date()));
+        applyForm.setBillNumber(codeRuleService.generateCode("activeSufFormRule"));
         applyForm.setDomain(domain.get());
-        applyForm.getDomain().setUser(userOptional.get());
         applyForm.setDomainUserName(domainUserName);
         applyForm.setDomainUserMobile(domainUserMobile);
         applyForm.setDomainUserEmain(domainUserEmainl);
         applyForm.setMemo(memo);
-        applyForm.setCreateTime(calendar.getTime());
         applyForm.setBillState(1);
         deployRepository.save(applyForm);
         return applyForm;
     }
-
     /**
      *
      *审核开通申请
      */
     @Override
-    public void auditapply(String applyid, Boolean isPass, String auditMemo) {
+    public ApplyForm auditapply(String applyid, Boolean isPass, String auditMemo) {
+        //判断用户是否存在 是否admin
+        UserContext currCtx=UserContext.getCurrentUserContext();
+        String tokenuserId=currCtx.properties.getString("rowid");
+        Optional<User> userOptional=userRepository.findById(tokenuserId);
+        if(!userOptional.isPresent()){
+            throw new DeploySystemException(DeploySystemStateCode.Login_IsNot);
+        }else if(userOptional.get().getAdmin()==false){
+            throw new DeploySystemException(DeploySystemStateCode.User_IsNotAdmin);
+        }
         //获取申请单
         Optional<ApplyForm> applyFormOptional= deployRepository.findById(applyid);
         if(!applyFormOptional.isPresent()){
@@ -163,6 +146,16 @@ public class DeployServiceImpl implements DeployService{
             ApplyForm applyForm=applyFormOptional.get();
             if(isPass==true){
                 applyForm.setBillState(2);
+                //验证domainUser表数据，若数据为空则添加数据
+                DomainUser domainUser= domainUserRepository.findByMobile(applyForm.getDomainUserMobile());
+                if(domainUser==null){
+                    domainUser = new DomainUser();
+                    domainUser.setRowId(UUID.randomUUID().toString());
+                    domainUser.setEmail(applyForm.getDomainUserEmain());
+                    domainUser.setMobile(applyForm.getDomainUserMobile());
+                    domainUser.setUserName(applyForm.getDomainUserName());
+                    domainUserRepository.save(domainUser);
+                }
                 //修改企业域是否开通suf
                 Domain domain=applyFormOptional.get().getDomain();
                 domain.setIsActiveSuf(true);
@@ -170,13 +163,18 @@ public class DeployServiceImpl implements DeployService{
                 calendar.add(Calendar.MONTH,2);
                 domain.setExpireDate(calendar.getTime());
                 domain.setUsercount(10);
+                domain.getDomainUsers().add(domainUser);
                 domainRepository.save(domain);
             }else if (isPass==false||isPass==null){
                 applyForm.setBillState(3);
-
             }
             applyForm.setAuditMemo(auditMemo);
-            deployRepository.save(applyForm);
+            //修改审批时间
+            Calendar calendar=Calendar.getInstance();
+            applyForm.setAuditTime(calendar.getTime());
+            //修改审核人信息
+            applyForm.setAuditer(userOptional.get());
+            return deployRepository.save(applyForm);
         }
     }
 }

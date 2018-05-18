@@ -1,10 +1,8 @@
 package com.lonntec.sufservice.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import java.util.Date;
+import javax.persistence.*;
+import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.UUID;
 
 @Entity
@@ -19,6 +17,12 @@ public class User {
 
     @Column(name="fnickname")
     String nickname;
+
+    @Transient
+    String password;
+
+    @Column(name="fpasswordhash")
+    String passwordHash;
 
     @Column(name="fmobile")
     String mobile;
@@ -58,6 +62,22 @@ public class User {
 
     public void setNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+        try{
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            byte[] md5Data = digest.digest(this.password.getBytes("utf-8"));
+            this.passwordHash =  Base64.getEncoder().encodeToString(md5Data);
+        }catch (Exception ex){
+            ex.printStackTrace();
+            this.passwordHash = this.password;
+        }
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
     public String getMobile() {

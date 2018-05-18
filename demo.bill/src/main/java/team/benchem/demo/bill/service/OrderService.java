@@ -3,7 +3,6 @@ package team.benchem.demo.bill.service;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import team.benchem.demo.bill.entity.OrderBill;
 import team.benchem.demo.bill.repository.OrderBillRepository;
 import team.benchem.framework.annotation.MicroServiceMessageConsumer;
@@ -18,11 +17,11 @@ public class OrderService {
     OrderBillRepository billRepository;
 
     public String createOrderBill(String productName, Double amount){
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     public Boolean payOrderBill(String billNumber, Double amount){
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     public OrderBill getOrderBill(String billNumber){

@@ -16,5 +16,5 @@ public interface LicenseService {
     License apply(String domainId, String memo, Integer userCount, Date expireDate);
 
     //审核授权申请
-    void auditapply(String applyId,Boolean isPass,String auditMemo);
+    License auditapply(String applyId,Boolean isPass,String auditMemo);
 }

@@ -9,11 +9,7 @@ public interface AuthService {
 
     String login(String username, String password);
 
-    String sayOnline(String username, String token);
-
     void logout(String username, String token);
-
-    List<Channel> getUserMenus(String username);
 
     User getuser();
 }

@@ -7,4 +7,6 @@ include 'usersystem'
 include 'domainservice'
 include 'sufservice'
 include 'domainservice.adminportal'
+include 'coderuleservice'
+include 'framework.test'
 

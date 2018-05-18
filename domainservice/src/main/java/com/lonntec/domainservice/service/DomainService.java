@@ -9,11 +9,10 @@ public interface DomainService {
 
     List<Domain> findDomains(String keyword, Integer page, Integer size);
 
-    List<Domain> findActiveSufListDomains(String keyword, Integer page, Integer size);
+    List<Domain> findActiveSufListDomains(String keyword, Integer page, Integer size,Boolean IsActiveSuf);
 
-    List<Domain> findNotActiveSufListDomains(String keyword, Integer page, Integer size);
 
-    Domain appendDomain(Domain domain);
+    Domain appendDomain(Domain domain,String ownerId);
 
     Domain modifyDomain(Domain domain);
 

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import team.benchem.framework.lang.MicroServiceException;
+import team.benchem.framework.sdk.UserContext;
 import team.benchem.usersystem.entity.User;
 import team.benchem.usersystem.lang.UserSystemException;
 import team.benchem.usersystem.lang.UserSystemStateCode;
@@ -37,7 +38,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User appendUser(User user) {
         //判断用户名，密码，是否管理员，是否启用是否为空
-        if(user.getUsername()==null||user.getUsername().replaceAll("\\s*","").equals("")){
+       if(user.getUsername()==null||user.getUsername().replaceAll("\\s*","").equals("")){
             throw new UserSystemException(UserSystemStateCode.UserName_IsEmpty);
         }
         if(user.getNickname()==null||user.getNickname().replaceAll("\\s*","").equals("")){
@@ -104,12 +105,12 @@ public class UserServiceImpl implements UserService {
         //判断号码是否占用
         Optional<User>  mobileOptional = userRepository.findByMobile(user.getMobile());
 
-        if(mobileOptional.isPresent()&&mobileOptional.get().getRowId() != user.getRowId()){
+        if(mobileOptional.isPresent() && !(mobileOptional.get().getRowId().equals(user.getRowId()))){
             throw new UserSystemException(UserSystemStateCode.Mobile_IsExites);
         }
         //判断邮箱是否占用
         Optional<User>  emailOptional = userRepository.findByEmail(user.getEmail());
-        if(emailOptional.isPresent()&&emailOptional.get().getRowId()!=user.getRowId()){
+        if(emailOptional.isPresent() && !(emailOptional.get().getRowId().equals(user.getRowId()))){
             throw new UserSystemException(UserSystemStateCode.Email_IsExites);
         }
         User dbUser = userOptional.get();
@@ -133,7 +134,7 @@ public class UserServiceImpl implements UserService {
         if(user.getIsAdmin()==true){
             throw new UserSystemException(UserSystemStateCode.User_IsAdminNotDelete);
         }
-        if(user.getIsEnable()==false){
+        if(user.getIsEnable()==true){
             throw new UserSystemException(UserSystemStateCode.User_IsAvail);
         }
         userRepository.deleteById(rowId);
@@ -156,10 +157,26 @@ public class UserServiceImpl implements UserService {
         }else if(isAdmin==null){
             throw new UserSystemException(UserSystemStateCode.IsAdmin_IsEmpty);
         }
+        //获取当前登陆用户
+        UserContext currCtx = UserContext.getCurrentUserContext();
+        String currUserId = currCtx.properties.getString("rowid");
+        Optional<User> currUserOptional = userRepository.findById(currUserId);
+
+        //获取目标用户
         Optional<User> optional= userRepository.findById(rowId);
         if(!optional.isPresent()){
             throw new UserSystemException(UserSystemStateCode.User_IsNotExites);
         }
+        //判断当前用户名是否admin，目标用户是否自己
+        if(currUserOptional.get().getIsAdmin()==false){
+            throw new UserSystemException(UserSystemStateCode.No_Permission);
+        }else if(!currUserOptional.get().getUsername().equalsIgnoreCase("admin")){
+            throw new UserSystemException(UserSystemStateCode.No_Permission);
+        }
+        if(optional.get().getUsername().equalsIgnoreCase("admin")){
+            throw new UserSystemException(UserSystemStateCode.Admin_CanNotDisableAdmin);
+        }
+
         User user=optional.get();
         user.setIsAdmin(isAdmin);
         userRepository.save(user);
@@ -207,7 +224,7 @@ public class UserServiceImpl implements UserService {
             throw new UserSystemException(UserSystemStateCode.User_IsNotExites);
         }
         User user=userOptional.get();
-        if(user.getIsAdmin()==true){
+        if(user.getIsAdmin() && !isEnable){
             throw new UserSystemException(UserSystemStateCode.User_IsAdminNotDisabled);
         }
         user.setIsEnable(isEnable);

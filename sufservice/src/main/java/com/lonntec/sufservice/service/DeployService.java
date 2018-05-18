@@ -12,5 +12,5 @@ public interface DeployService {
 
     ApplyForm apply(String domainId, String memo, String domainUserName,String domainUserMobile,String domainUserEmainl);
 
-    void auditapply(String applyId,Boolean isPass, String auditMemo);
+    ApplyForm auditapply(String applyId,Boolean isPass, String auditMemo);
 }

@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import team.benchem.framework.annotation.RequestTokenValidate;
 import team.benchem.usersystem.entity.Channel;
 import team.benchem.usersystem.entity.Group;

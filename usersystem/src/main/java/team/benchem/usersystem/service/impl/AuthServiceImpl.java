@@ -48,13 +48,13 @@ public class AuthServiceImpl implements AuthService {
         String dbpassword=dbUser.getPasswordHash();
         User user=new User();
         user.setPassword(password);
-        //密码是否正确
-        if(!user.getPasswordHash().equals(dbpassword)){
-            throw new UserSystemException(UserSystemStateCode.Password_IsErr);
-        }
         //是否为禁用用户
         if(dbUser.getIsEnable()==false){
             throw new UserSystemException(UserSystemStateCode.User_IsDisabled);
+        }
+        //密码是否正确
+        if(!user.getPasswordHash().equals(dbpassword)){
+            throw new UserSystemException(UserSystemStateCode.Password_IsErr);
         }
         //最后登录时间
         Calendar calendar = Calendar.getInstance();
@@ -68,11 +68,6 @@ public class AuthServiceImpl implements AuthService {
         String token  =  tokenService.grantToken(tokenBody);
         return token;
     }
-    //
-    @Override
-    public String sayOnline(String username, String token) {
-        return null;
-    }
     //用户登出
     @Override
     public void logout(String username, String token) {
@@ -85,10 +80,6 @@ public class AuthServiceImpl implements AuthService {
 
     }
 
-    @Override
-    public List<Channel> getUserMenus(String userName) {
-        return null;
-    }
     //获取当前用户
     @Override
     public User getuser() {

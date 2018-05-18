@@ -67,6 +67,7 @@ fi
 cat > Dockerfile <<EOF
 FROM $from
 MAINTAINER lonntec.com
+ENV LANG C.UTF-8
 
 EOF
 if [ "$sourcedir" != "" ]; then

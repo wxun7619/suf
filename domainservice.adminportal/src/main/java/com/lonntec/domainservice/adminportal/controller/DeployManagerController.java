@@ -4,10 +4,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.lonntec.domainservice.adminportal.proxy.DeploySystemProxy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.lang.Nullable;
+import org.springframework.web.bind.annotation.*;
 import team.benchem.framework.annotation.RequestTokenValidate;
 
 @CrossOrigin
@@ -22,7 +20,11 @@ public class DeployManagerController {
      */
     @RequestTokenValidate
     @RequestMapping("/getlist")
-    public JSONArray getList(String keyword,Integer page,Integer size){
+    public JSONArray getList(
+            @RequestParam @Nullable String keyword,
+            @RequestParam @Nullable Integer page,
+            @RequestParam @Nullable Integer size){
+
        return deploySystemProxy.getList(keyword,page,size);
     }
 
@@ -49,8 +51,8 @@ public class DeployManagerController {
      */
     @RequestTokenValidate
     @RequestMapping("/auditapply")
-    public void auditApply(@RequestBody JSONObject postBody){
-        deploySystemProxy.auditApply(postBody);
+    public JSONObject auditApply(@RequestBody JSONObject postBody){
+       return deploySystemProxy.auditApply(postBody);
     }
 
 }

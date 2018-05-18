@@ -3,7 +3,6 @@ package team.benchem.demo.bill.controller;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import team.benchem.demo.bill.entity.OrderBill;
 import team.benchem.demo.bill.service.OrderService;
 import team.benchem.demo.bill.service.PayServiceProxy;
@@ -47,7 +46,7 @@ public class OrderBillController {
     @RequestTokenValidate
     @RequestMapping("/query")
     public OrderBill queryOrderBill(@RequestParam String billNumber){
-        throw  new NotImplementedException();
+        throw  new UnsupportedOperationException();
     }
 
 }

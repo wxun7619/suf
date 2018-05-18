@@ -5,6 +5,7 @@ import com.lonntec.sufservice.entity.License;
 import com.lonntec.sufservice.entity.User;
 import com.lonntec.sufservice.lang.DeploySystemException;
 import com.lonntec.sufservice.lang.DeploySystemStateCode;
+import com.lonntec.sufservice.proxy.CodeRuleService;
 import com.lonntec.sufservice.repository.DomainRepository;
 import com.lonntec.sufservice.repository.LicenseRepository;
 import com.lonntec.sufservice.repository.UserRepository;
@@ -30,6 +31,8 @@ public class LicenseServiceImpl implements LicenseService{
     @Autowired
     LicenseRepository licenseRepository;
     @Autowired
+    CodeRuleService codeRuleService;
+    @Autowired
     DomainRepository domainRepository;
     @Autowired
     UserRepository userRepository;
@@ -53,15 +56,14 @@ public class LicenseServiceImpl implements LicenseService{
             queryKeywork = "%" + queryKeywork + "%";
         }
         //若果是admin可查所有，如果是实施人员只能查自己创建的
-        if(userOptional.isPresent()){
+        if(!userOptional.isPresent()){
+            throw new DeploySystemException(DeploySystemStateCode.Login_IsNot);
+        }
             if(userOptional.get().getAdmin()==true){
                 return  licenseRepository.findAllByMyQueryIsAdmin(queryKeywork,pageable);
-            }else if(userOptional.get().getAdmin()==false){
+            }else{
                 return licenseRepository.findAllByMyQuery(queryKeywork,tokenuserId,pageable);
             }
-        }
-        return null;
-
     }
     /**
      *
@@ -83,10 +85,9 @@ public class LicenseServiceImpl implements LicenseService{
         //若果是admin可以查所有，如果是实施人员只能查自己创建的
         if(userOptional.get().getAdmin()==true){
             return  licenseRepository.countByMyQueryIsAdmin(queryKeywork);
-        }else if(userOptional.get().getAdmin()==false){
+        }else{
             return licenseRepository.countByMyQuery(queryKeywork,tokenuserId);
         }
-     return 0;
     }
     /**
      *
@@ -95,6 +96,9 @@ public class LicenseServiceImpl implements LicenseService{
     @Override
     public License apply(String domainId, String memo, Integer userCount, Date expireDate) {
         //判断是否传入空值 domainId userCount(是否为数字) expireDate
+        if(userCount==null){
+            userCount=0;
+        }
         String count=userCount.toString();
         if(domainId==null||domainId.replaceAll("\\s*","").equals("")){
             throw new DeploySystemException(DeploySystemStateCode.DomainId_IsEmpty);
@@ -105,18 +109,17 @@ public class LicenseServiceImpl implements LicenseService{
         }
         //获取企业域信息
         Optional<Domain> domainOptional=domainRepository.findById(domainId);
-        //判断企业域是否存在
+        //判断企业域是否存在 是否禁用
         if(!domainOptional.isPresent()){
             throw new DeploySystemException(DeploySystemStateCode.Domain_IsNotExist);
+        }else if (domainOptional.get().getIsEnable()==false){
+            throw new DeploySystemException(DeploySystemStateCode.Domain_IsNotEnable);
         }
         //获取owneruser
         Optional<User> userOptional=userRepository.findById(domainOptional.get().getUser().getRowId());
         License license=new License();
-        //申请单单号
-        SimpleDateFormat sdf=new SimpleDateFormat("yyMMddHHmmssSSS");
         Calendar calendar=Calendar.getInstance();
-        //申请单号 Todo（完善）
-        license.setBillNumber("SQ"+sdf.format(new Date()));
+        license.setBillNumber(codeRuleService.generateCode("applySufLicenseRule"));
         license.setDomain(domainOptional.get());
         license.getDomain().setUser(userOptional.get());
         license.setApplyUserCount(userCount);
@@ -131,7 +134,8 @@ public class LicenseServiceImpl implements LicenseService{
      * 审核授权申请
      */
     @Override
-    public void auditapply(String applyId, Boolean isPass, String auditMemo) {
+    public License auditapply(String applyId, Boolean isPass, String auditMemo) {
+
         //判断用户是否存在 是否admin
         UserContext currCtx=UserContext.getCurrentUserContext();
         String tokenuserId=currCtx.properties.getString("rowid");
@@ -146,24 +150,29 @@ public class LicenseServiceImpl implements LicenseService{
         //判断表单是否存在，审核表单
         if(!licenseOptional.isPresent()){
             throw new DeploySystemException(DeploySystemStateCode.License_IsNotExist);
-        }else if (licenseOptional.isPresent()){
-            License licenseForm=licenseOptional.get();
-            if(isPass==true){
-                licenseForm.setBillState(2);
-                //修改企业域是否开通suf
-                Domain domain=licenseForm.getDomain();
-                domain.setIsActiveSuf(true);
-                domain.setUsercount(licenseForm.getApplyUserCount());
-                domainRepository.save(domain);
-            }else if (isPass==false||isPass==null){
-                licenseForm.setBillState(3);
-            }
-            //审批备注
-            licenseForm.setAuditMemo(auditMemo);
-            //修改审核人信息
-            licenseForm.setAuditer(userOptional.get());
-
-            licenseRepository.save(licenseForm);
         }
+
+        License licenseForm=licenseOptional.get();
+        if(isPass==true){
+            licenseForm.setBillState(2);
+            //修改企业域是否开通suf
+            Domain domain=licenseForm.getDomain();
+            domain.setExpireDate(licenseForm.getApplyExpireDate());
+            domain.setUsercount(licenseForm.getApplyUserCount());
+            domainRepository.save(domain);
+        }else if (isPass==false||isPass==null){
+            licenseForm.setBillState(3);
+        }
+
+        //审批备注
+        licenseForm.setAuditMemo(auditMemo);
+        //修改审核人信息
+        licenseForm.setAuditer(userOptional.get());
+        //修改审批时间
+        Calendar calendar=Calendar.getInstance();
+        licenseForm.setAuditTime(calendar.getTime());
+
+        return licenseRepository.save(licenseForm);
+
     }
 }

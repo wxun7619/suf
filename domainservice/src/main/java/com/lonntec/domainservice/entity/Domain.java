@@ -2,6 +2,7 @@ package com.lonntec.domainservice.entity;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,7 +47,7 @@ public class Domain {
     Integer userCount;
 
     @Column(name = "fexpiredate")
-    String expireDate;
+    Date expireDate;
 
     @ManyToMany(cascade = CascadeType.ALL)
     @OrderBy(value = "fusername")
@@ -163,11 +164,11 @@ public class Domain {
         this.userCount = userCount;
     }
 
-    public String getExpireDate() {
+    public Date getExpireDate() {
         return expireDate;
     }
 
-    public void setExpireDate(String expireDate) {
+    public void setExpireDate(Date expireDate) {
         this.expireDate = expireDate;
     }
 

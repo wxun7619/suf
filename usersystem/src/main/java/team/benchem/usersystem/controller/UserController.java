@@ -43,7 +43,6 @@ public class UserController {
         for(User item:userList){
             JSONObject json = JSONObject.parseObject(JSONObject.toJSONString(item));
             json.remove("passwordHash");
-            json.remove("lastLoginTime");
             reValue.add(json);
         }
         return reValue;
@@ -66,7 +65,6 @@ public class UserController {
 
         JSONObject json = JSONObject.parseObject(JSONObject.toJSONString(user));
         json.remove("passwordHash");
-        json.remove("lastLoginTime");
         return json;
     }
     //删除用户

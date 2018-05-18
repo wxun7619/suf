@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DomainUserRepository extends JpaRepository<DomainUser, String> {
 
-    DomainUser findByUserName(String domainUserName);
+    DomainUser findByMobile(String mobile);
 }

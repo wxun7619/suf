@@ -11,10 +11,7 @@ import com.lonntec.domainservice.repository.DomainRepository;
 import com.lonntec.domainservice.repository.UserRepository;
 import com.lonntec.domainservice.service.DomainService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import team.benchem.framework.annotation.RequestTokenValidate;
 import team.benchem.framework.sdk.UserContext;
 
@@ -33,52 +30,9 @@ public class DomainController {
 
     @Autowired
     UserRepository userRepository;
-//
-//    @Autowired
-//    DomainRepository domainRepository;
-
-//    @RequestMapping("/buildmock")
-//    public void createMokeList(){
-//        User norUser =  userRepository.findById("394d3587-c1eb-4233-9ed8-c4a2e3bddc6b").get();
-//        User adminUser = userRepository.findById("af4e2e8b-c8d8-4803-9c48-7004c0a73902").get();
-//
-//        Integer orderIndex = 1;
-//        Random random = new Random();
-//        for(int index=0; index < 200; index++,orderIndex++){
-//            Domain domainInfo = new Domain();
-//            domainInfo.setDomainNumber(String.format("DM%s", padLeft(orderIndex.toString(), 6, '0')));
-//            domainInfo.setDomainName(String.format("DN%s", padLeft(orderIndex.toString(), 6, '0')));
-//            domainInfo.setDomainShortName(String.format("Ds%s", padLeft(orderIndex.toString(), 6, '0')));
-//            domainInfo.setAddress("AAAAAAA");
-//            domainInfo.setLinkMan("AAACCCCC");
-//            domainInfo.setLinkManMobile(String.format("13955%s", padLeft(orderIndex.toString(), 6, '0')));
-//            domainInfo.setBusinessLicense("");
-//            domainInfo.setMemo("");
-//            domainInfo.setOwnerUser( random.nextInt() % 2 == 0 ? norUser : adminUser);
-//            domainService.appendDomain(domainInfo);
-//        }
-//    }
-//
-//    /**
-//     * @作者 尧
-//     * @功能 String右对齐
-//     */
-//    public static String padLeft(String src, int len, char ch) {
-//        int diff = len - src.length();
-//        if (diff <= 0) {
-//            return src;
-//        }
-//        char[] charr = new char[len];
-//        System.arraycopy(src.toCharArray(), 0, charr, diff, src.length());
-//        for (int i = 0; i < diff; i++) {
-//            charr[i] = ch;
-//        }
-//        return new String(charr);
-//    }
-
     //创建企业域
     @RequestTokenValidate
-    @RequestMapping("/create")
+    @PostMapping("/create")
     public Domain createDomain(@RequestBody JSONObject postData){
 
         UserContext currCtx = UserContext.getCurrentUserContext();
@@ -92,13 +46,6 @@ public class DomainController {
         String businessLicense = postData.getString("businessLicense");
         String memo = postData.getString("memo");
 
-        if(ownerId==null||ownerId.replaceAll("\\s*","").equals("")){
-            throw new DomainSystemException(DomainSystemStateCode.OwnerUserId_IsEmpty);
-        }
-        Optional<User> userOptional = userRepository.findById(ownerId);
-        if(!userOptional.isPresent()){
-            throw new DomainSystemException(DomainSystemStateCode.OwnerUserId_IsNotExist);
-        }
 
         Domain domainInfo = new Domain();
         domainInfo.setDomainName(domainName);
@@ -108,16 +55,16 @@ public class DomainController {
         domainInfo.setLinkManMobile(linkManMobile);
         domainInfo.setBusinessLicense(businessLicense);
         domainInfo.setMemo(memo);
-        domainInfo.setOwnerUser(userOptional.get());
+        //domainInfo.setOwnerUser(userOptional.get());
 
         //todo:
-        domainService.appendDomain(domainInfo);
+        domainService.appendDomain(domainInfo,ownerId );
         return domainInfo;
     }
 
     //获取企业列表
     @RequestTokenValidate
-    @RequestMapping("/list")
+    @GetMapping("/list")
     public JSONArray findDomains(
             @PathParam("keyword") String keyword,
             @PathParam("page") Integer page,
@@ -142,7 +89,7 @@ public class DomainController {
 
     //修改企业域
     @RequestTokenValidate
-    @RequestMapping("/modify")
+    @PostMapping("/modify")
     public JSONObject modify(@RequestBody JSONObject postData){
         String domainId = postData.getString("rowId");
         String domainName = postData.getString("domainName");
@@ -171,7 +118,7 @@ public class DomainController {
 
     //启用/禁用企业域
     @RequestTokenValidate
-    @RequestMapping("/setenable")
+    @PostMapping("/setenable")
     public void setEnable(@RequestBody JSONObject postForm){
         String rowId = postForm.getString("rowId");
         Boolean isEnable = postForm.getBoolean("isEnable");
@@ -180,7 +127,7 @@ public class DomainController {
 
     //企业域实施人员变更
     @RequestTokenValidate
-    @RequestMapping("/changeuser")
+    @PostMapping("/changeuser")
     public Domain changeUser(@RequestBody JSONObject postData){
 
         String domainId = postData.getString("domainId");
@@ -192,16 +139,26 @@ public class DomainController {
 
     //获取已开通SUF企业列表
     @RequestTokenValidate
-    @RequestMapping("/activesuflist")
+    @GetMapping("/activesuflist")
     public JSONArray findActiveSufListDomains(
             @PathParam("keyword") String keyword,
             @PathParam("page") Integer page,
             @PathParam("size") Integer size
     ){
-        List<Domain> domainList = domainService.findActiveSufListDomains(keyword, page, size);
+        List<Domain> domainList = domainService.findActiveSufListDomains(keyword, page, size,true);
         JSONArray reValue = new JSONArray();
         for(Domain item:domainList){
             JSONObject json = JSONObject.parseObject(JSONObject.toJSONString(item));
+            json.remove("domainShortName");
+            json.remove("address");
+            json.remove("linkMan");
+            json.remove("linkManMobile");
+            json.remove("businessLicense");
+            json.remove("memo");
+            json.remove("ownerUser");
+            json.remove("domainUsers");
+            json.remove("isEnable");
+            json.remove("isActiveSuf");
             reValue.add(json);
         }
         return reValue;
@@ -209,16 +166,26 @@ public class DomainController {
 
     //获取未开通SUF企业列表
     @RequestTokenValidate
-    @RequestMapping("/unactivesuflist")
+    @GetMapping("/unactivesuflist")
     public JSONArray findNotActiveSufListDomains(
             @PathParam("keyword") String keyword,
             @PathParam("page") Integer page,
             @PathParam("size") Integer size
     ){
-        List<Domain> domainList = domainService.findNotActiveSufListDomains(keyword, page, size);
+        List<Domain> domainList = domainService.findActiveSufListDomains(keyword, page, size,false);
         JSONArray reValue = new JSONArray();
         for(Domain item:domainList){
             JSONObject json = JSONObject.parseObject(JSONObject.toJSONString(item));
+            json.remove("domainShortName");
+            json.remove("address");
+            json.remove("userCount");
+            json.remove("expireDate");
+            json.remove("businessLicense");
+            json.remove("memo");
+            json.remove("ownerUser");
+            json.remove("domainUsers");
+            json.remove("isEnable");
+            json.remove("isActiveSuf");
             reValue.add(json);
         }
         return reValue;

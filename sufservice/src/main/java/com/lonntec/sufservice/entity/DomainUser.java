@@ -1,6 +1,9 @@
 package com.lonntec.sufservice.entity;
 
 import javax.persistence.*;
+import java.security.MessageDigest;
+import java.util.Base64;
+import java.util.UUID;
 
 @Entity
 @Table(name="t_domain_domainuser")
@@ -24,6 +27,10 @@ public class DomainUser {
     @Column(name = "femail")
     String email;
 
+    public DomainUser() {
+        rowId= UUID.randomUUID().toString();
+    }
+
     public String getRowId() {
         return rowId;
     }
@@ -40,20 +47,20 @@ public class DomainUser {
         this.userName = userName;
     }
 
-    public String getDomainUserPassword() {
-        return domainUserPassword;
-    }
-
     public void setDomainUserPassword(String domainUserPassword) {
         this.domainUserPassword = domainUserPassword;
+        try{
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            byte[] md5Data = digest.digest(this.domainUserPassword.getBytes("utf-8"));
+            this.passwordHash =  Base64.getEncoder().encodeToString(md5Data);
+        }catch (Exception ex){
+            ex.printStackTrace();
+            this.passwordHash = this.domainUserPassword;
+        }
     }
 
     public String getPasswordHash() {
         return passwordHash;
-    }
-
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
     }
 
     public String getMobile() {

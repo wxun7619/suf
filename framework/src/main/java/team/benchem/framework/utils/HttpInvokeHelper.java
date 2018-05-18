@@ -4,11 +4,15 @@ package team.benchem.framework.utils;
 import jodd.http.HttpRequest;
 import jodd.http.HttpResponse;
 import jodd.util.StringPool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class HttpInvokeHelper {
+
+    static Logger logger = LoggerFactory.getLogger(HttpInvokeHelper.class);
 
     public static String get(String host, String path, HashMap<String, String> headers, HashMap<String, Object> queryParam){
         Map<String, String> params = new HashMap<>();
@@ -36,7 +40,8 @@ public class HttpInvokeHelper {
             request.header(headers);
         }
         if(postData != null && postData.length() > 0){
-            request.body(postData);
+            request.bodyText(postData, "application/json;charset=UTF-8");
+//            request.bodyText(postData);
         }
         HttpResponse response = request.send();
         return response.bodyText();

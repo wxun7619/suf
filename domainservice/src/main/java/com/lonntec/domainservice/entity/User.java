@@ -1,9 +1,8 @@
 package com.lonntec.domainservice.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.UUID;
 
 @Entity
@@ -30,6 +29,12 @@ public class User {
 
     @Column(name="fisenable")
     Boolean isEnable;
+
+    @Transient
+    String password;
+
+    @Column(name="fpasswordhash")
+    String passwordHash;
 
     public User() {
         rowId = UUID.randomUUID().toString();
@@ -90,7 +95,21 @@ public class User {
     public void setIsEnable(Boolean enable) {
         isEnable = enable;
     }
+    public void setPassword(String password) {
+        this.password = password;
+        try{
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            byte[] md5Data = digest.digest(this.password.getBytes("utf-8"));
+            this.passwordHash =  Base64.getEncoder().encodeToString(md5Data);
+        }catch (Exception ex){
+            ex.printStackTrace();
+            this.passwordHash = this.password;
+        }
+    }
 
+    public String getPasswordHash() {
+        return passwordHash;
+    }
     @Override
     public String toString() {
         return "User{" +

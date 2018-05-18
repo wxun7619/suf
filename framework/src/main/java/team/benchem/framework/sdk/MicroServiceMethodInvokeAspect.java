@@ -79,6 +79,8 @@ public class MicroServiceMethodInvokeAspect {
             requestBodyStr = queryParam.toJSONString();
         }
 
+        logger.info(serviceCenterUrl);
+        logger.info(String.format("--> %s", requestBodyStr));
         HttpPostHystrixCommand cmd = new HttpPostHystrixCommand(
                 serviceCenterUrl,
                 "/invoke",

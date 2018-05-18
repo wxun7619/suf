@@ -71,11 +71,11 @@ public class DeployController {
      */
     @RequestTokenValidate
     @RequestMapping("/auditapply")
-    public void auditApply(@RequestBody JSONObject jsonObject){
-            String applyId=jsonObject.getString("ApplyId");
+    public ApplyForm auditApply(@RequestBody JSONObject jsonObject){
+            String applyId=jsonObject.getString("applyId");
             Boolean isPass=jsonObject.getBoolean("isPass");
             String auditMemo=jsonObject.getString("auditMemo");
-        deployService.auditapply(applyId,isPass,auditMemo);
+        return deployService.auditapply(applyId,isPass,auditMemo);
     }
 
 }

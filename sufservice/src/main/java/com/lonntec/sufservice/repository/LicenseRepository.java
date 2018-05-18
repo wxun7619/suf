@@ -1,6 +1,5 @@
 package com.lonntec.sufservice.repository;
 
-import com.lonntec.sufservice.entity.ApplyForm;
 import com.lonntec.sufservice.entity.License;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -28,12 +27,11 @@ public interface LicenseRepository extends PagingAndSortingRepository<License,St
 
     @Query("select count(l) from License l where " +
             "(l.domain.domainNumber like :keyword or l.domain.domainName like :keyword or l.domain.domainShortName like :keyword) " +
-            "and l.domain.user.rowId = :userId" +
-            " order by l.createTime desc")
+            "and l.domain.user.rowId = :userId")
     Integer countByMyQuery(
             @Param("keyword") String keyword,
             @Param("userId") String ownerId);
 
-    @Query("select count(l) from License l where l.domain.domainNumber like :keyword or l.domain.domainName like :keyword or l.domain.domainShortName like :keyword order by l.createTime desc")
+    @Query("select count(l) from License l where l.domain.domainNumber like :keyword or l.domain.domainName like :keyword or l.domain.domainShortName like :keyword")
     Integer countByMyQueryIsAdmin( @Param("keyword") String keyword);
 }

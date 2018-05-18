@@ -43,21 +43,6 @@ public class AuthController {
         authService.logout(userName, token);
     }
 
-    @RequestTokenValidate
-    @RequestMapping("/sayonline")
-    public String sayOnline(@RequestBody JSONObject formData){
-        UserContext ctx = UserContext.getCurrentUserContext();
-        String userName = formData.getString("username");
-        String token = ctx.properties.getString("Suf-Token");
-        return authService.sayOnline(userName, token);
-    }
-
-    @RequestTokenValidate
-    @RequestMapping("/getmenus")
-    public List<Channel> getMenus(){
-        //todo: 不在本期实现
-        return null;
-    }
     //获取当前用户
     @RequestTokenValidate
     @RequestMapping("/getuser")

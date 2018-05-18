@@ -4,11 +4,10 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.lonntec.domainservice.adminportal.proxy.DeploySystemProxy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.lang.Nullable;
+import org.springframework.web.bind.annotation.*;
 import team.benchem.framework.annotation.RequestTokenValidate;
-
+@CrossOrigin
 @RequestMapping("/license")
 @RestController
 public class LicenseManagerController {
@@ -19,7 +18,10 @@ public class LicenseManagerController {
      */
     @RequestTokenValidate
     @RequestMapping("/getlist")
-    public JSONArray getList(String keyword, Integer page, Integer size
+    public JSONArray getList(
+            @RequestParam @Nullable String keyword,
+            @RequestParam @Nullable Integer page,
+            @RequestParam @Nullable Integer size
     ){
         return deploySystemProxy.getlicenselist(keyword,page,size);
     }
@@ -28,7 +30,7 @@ public class LicenseManagerController {
      * 获取开通申请数量
      */
     @RequestTokenValidate
-    @RequestMapping("/getlistcount")
+    @GetMapping("/getlistcount")
     public Integer getListCount(String keyword){
         return deploySystemProxy.getlicenseListCount(keyword);
     }
@@ -37,7 +39,7 @@ public class LicenseManagerController {
      * 递交开通申请
      */
     @RequestTokenValidate
-    @RequestMapping("/apply")
+    @PostMapping("/apply")
     public JSONObject apply(@RequestBody JSONObject applyInfo) {
         return deploySystemProxy.licenseapply(applyInfo);
     }
@@ -46,9 +48,8 @@ public class LicenseManagerController {
      * 审核开通申请
      */
     @RequestTokenValidate
-    @RequestMapping("/auditapply")
-    public void auditApply(String applyId,Boolean isPass,String auditMemo
-    ){
-        deploySystemProxy.licenseauditApply(applyId,isPass,auditMemo);
+    @PostMapping("/auditapply")
+    public JSONObject auditApply(@RequestBody JSONObject postBody){
+        return deploySystemProxy.licenseauditApply(postBody);
     }
 }

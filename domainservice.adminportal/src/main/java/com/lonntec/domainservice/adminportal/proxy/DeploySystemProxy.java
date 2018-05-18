@@ -15,26 +15,26 @@ public class DeploySystemProxy {
      * suf开通管理
      */
     //获取开通申请列表
-    @MicroServiceMethodProxy(microserviceKey = "sufservice",path="/deploy/getlist")
+    @MicroServiceMethodProxy(microserviceKey = "sufService",path="/deploy/getlist")
     public JSONArray getList(String keyword, Integer page, Integer size
     ){
         throw new MicroServiceException(new StateCodeImpl(-2,""));
     }
     //获取开通申请数量
-    @MicroServiceMethodProxy(microserviceKey = "sufservice",path="/deploy/getlistcount")
+    @MicroServiceMethodProxy(microserviceKey = "sufService",path="/deploy/getlistcount")
     public Integer getListCount(String keyword){
         throw new MicroServiceException(new StateCodeImpl(-2,""));
     }
 
     //递交开通申请
-    @MicroServiceMethodProxy(microserviceKey = "sufservice",path="/deploy/apply", type = RequestType.POST)
+    @MicroServiceMethodProxy(microserviceKey = "sufService",path="/deploy/apply", type=RequestType.POST)
     public JSONObject apply(JSONObject applyInfo) {
         throw new MicroServiceException(new StateCodeImpl(-2,""));
     }
 
     //审核开通申请
-    @MicroServiceMethodProxy(microserviceKey = "sufservice",path="/deploy/auditapply", type = RequestType.POST)
-    public void auditApply(JSONObject postData){
+    @MicroServiceMethodProxy(microserviceKey = "sufService",path="/deploy/auditapply", type=RequestType.POST)
+    public JSONObject auditApply(JSONObject postData){
         throw new MicroServiceException(new StateCodeImpl(-2,""));
     }
 
@@ -43,27 +43,26 @@ public class DeploySystemProxy {
      * suf授权管理
      */
     //获取授权申请列表
-    @MicroServiceMethodProxy(microserviceKey = "sufservice",path="/license/getlist")
+    @MicroServiceMethodProxy(microserviceKey = "sufService",path="/license/getlist")
     public JSONArray getlicenselist(String keyword, Integer page, Integer size
     ){
         throw new MicroServiceException(new StateCodeImpl(-2,""));
     }
     //获取授权申请数量
-    @MicroServiceMethodProxy(microserviceKey = "sufservice",path="/license/getlistcount")
+    @MicroServiceMethodProxy(microserviceKey = "sufService",path="/license/getlistcount")
     public Integer getlicenseListCount(String keyword){
         throw new MicroServiceException(new StateCodeImpl(-2,""));
     }
 
     //递交授权申请
-    @MicroServiceMethodProxy(microserviceKey = "sufservice",path="/license/apply")
+    @MicroServiceMethodProxy(microserviceKey = "sufService",path="/license/apply", type=RequestType.POST)
     public JSONObject licenseapply(JSONObject applyInfo) {
         throw new MicroServiceException(new StateCodeImpl(-2,""));
     }
 
     //审核授权申请
-    @MicroServiceMethodProxy(microserviceKey = "sufservice",path="/license/auditapply")
-    public void licenseauditApply(String applyId,Boolean isPass, String auditMemo
-    ){
+    @MicroServiceMethodProxy(microserviceKey = "sufService",path="/license/auditapply", type=RequestType.POST)
+    public JSONObject licenseauditApply(JSONObject postData){
         throw new MicroServiceException(new StateCodeImpl(-2,""));
     }
 

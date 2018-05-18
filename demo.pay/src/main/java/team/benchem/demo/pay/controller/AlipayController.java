@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import team.benchem.demo.pay.entity.PayLog;
 import team.benchem.framework.annotation.MicroServiceValidatePermission;
 
@@ -34,6 +33,6 @@ public class AlipayController {
 
     @RequestMapping("/query")
     public PayLog getPayLog(@RequestParam String billNumber){
-        throw  new NotImplementedException();
+        throw  new UnsupportedOperationException();
     }
 }

@@ -37,7 +37,7 @@ public class DomainServiceProxy {
 
     //启用/禁用企业域
     @MicroServiceMethodProxy(microserviceKey = "domainService", path = "/domain/setenable", type = RequestType.POST)
-    public JSONObject setEnable(JSONObject postData){
+    public void setEnable(JSONObject postData){
         throw new MicroServiceException(new StateCodeImpl(-3,""));
     }
 
